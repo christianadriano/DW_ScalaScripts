@@ -43,5 +43,14 @@ object CountAccidentsYearCompany extends App {
 			
 bufferedSource.close
 
+//Write results into a Spark dataframe
+val DataFrame df = df.withColumn("id", (org.apache.spark.sql.functions.monotonically_increasing_id()))
+  .select($"id", explode(hashMap))
+  .groupBy("id")
+  .pivot("key")
+  .agg(first("value"))
+
+ dataFrame.write.format("com.databricks.spark.csv").save("myFile.csv")
+  
 //Count occurrences by company and year
 }
