@@ -4,6 +4,11 @@ import org.apache.spark.sql.functions.{monotonically_increasing_id, explode, fir
 import scala.collection.mutable.HashMap 
 import scala.io.Source
 
+//HashMap to JSON
+import java.nio.charset.StandardCharsets
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization
+
 object CountAccidentsYearCompany extends App {
 	var hashMap:HashMap[String,HashMap[String,Integer]] = 
 			HashMap(
@@ -39,18 +44,27 @@ object CountAccidentsYearCompany extends App {
 						}
 			}
 			
-			println(hashMap(year))
+			//println(hashMap(year))
 			
-bufferedSource.close
+			bufferedSource.close
+
+			//Convert HashMap to JSON
+			implicit val json4sFormats = DefaultFormats
+			//val yourBytes: Array[Byte] = "somebytes".getBytes(StandardCharsets.UTF_8)
+			//val list: List[String] = List("a", "aa")
+			//val map = Map("query" -> yourBytes, "abc" -> list)
+			val json = Serialization.writePretty(hashMap.toMap)
+			println(json)
+
 
 //Write results into a Spark dataframe
-val DataFrame df = df.withColumn("id", (org.apache.spark.sql.functions.monotonically_increasing_id()))
-  .select($"id", explode(hashMap))
-  .groupBy("id")
-  .pivot("key")
-  .agg(first("value"))
+//val DataFrame df = df.withColumn("id", (org.apache.spark.sql.functions.monotonically_increasing_id()))
+// .select($"id", explode(hashMap))
+//  .groupBy("id")
+//  .pivot("key")
+//  .agg(first("value"))
 
- dataFrame.write.format("com.databricks.spark.csv").save("myFile.csv")
+// dataFrame.write.format("com.databricks.spark.csv").save("myFile.csv")
   
 //Count occurrences by company and year
 }
